@@ -4,7 +4,7 @@
   "description": "programmatic plopping for fun and profit",
   "main": "lib/index.js",
   "scripts": {
-    "clean": "node ./build-scripts/clean",
+    "clean": "rm -rf ./lib",
     "develop": "npm run compile && (npm run compile-watch & npm run test-watch)",
     "compile-watch": "babel src --watch --out-dir lib",
     "compile": "npm run clean && babel src --out-dir lib",
