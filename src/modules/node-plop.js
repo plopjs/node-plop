@@ -109,7 +109,7 @@ function nodePlop(plopfilePath = '', plopCfg = {}) {
 	}
 
 	// look for a package.json file to use for the "pkg" helper
-	try { pkgJson = require(path.join(getDestBasePath(), 'package.json')); }
+	try { pkgJson = require(path.join(path.dirname(getDestBasePath()), 'package.json')); }
 	catch(error) { pkgJson = {}; }
 
 	/////////
