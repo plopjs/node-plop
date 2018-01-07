@@ -205,12 +205,11 @@ function nodePlop(plopfilePath = '', plopCfg = {}) {
 		const mixins = generator.mixins.map(
 			name => getGeneratorMixin(name)
 		);
-
 		const mixinActions = compose(...mixins.map(m => m.actions));
 		const mixinPrompts = compose(...mixins.map(m => m.prompts));
 
 		return Object.assign({}, generator, {
-			actions: (...actionsArgs) => mixinActions(normalizeActions(generator.actions, ...actionsArgs)),
+			actions: (...actionsArgs) => mixinActions(normalizeActions(generator.actions, ...actionsArgs), ...actionsArgs),
 			prompts: mixinPrompts(generator.prompts)
 		});
 	};
