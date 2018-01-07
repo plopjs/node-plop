@@ -16,6 +16,7 @@ function nodePlop(plopfilePath = '', plopCfg = {}) {
 	let welcomeMessage;
 	const {destBasePath} = plopCfg;
 	const generators = {};
+	const generatorMixins = {};
 	const partials = {};
 	const actionTypes = {};
 	const helpers = Object.assign({
@@ -53,12 +54,33 @@ function nodePlop(plopfilePath = '', plopCfg = {}) {
 		return generators[name];
 	}
 
+	const getGeneratorMixin = name => generatorMixins[name];
+	function setGeneratorMixin(name = '', config = {}) {
+		// if no name is provided, use a default
+		name = name || `generatorMixin-${Object.keys(generatorMixins).length + 1}`;
+
+		// add the generator to this context
+		generatorMixins[name] = Object.assign(config, {
+			name: name,
+			basePath: plopfilePath
+		});
+
+		return generatorMixins[name];
+	}
+
 	const getHelperList = () => Object.keys(helpers).filter(h => !baseHelpers.includes(h));
 	const getPartialList = () => Object.keys(partials);
 	const getActionTypeList = () => Object.keys(actionTypes);
 	function getGeneratorList() {
 		return Object.keys(generators).map(function (name) {
 			const {description} = generators[name];
+			return {name, description};
+		});
+	}
+
+	function getGeneratorMixinList() {
+		return Object.keys(generatorMixins).map(function (name) {
+			const {description} = generatorMixins[name];
 			return {name, description};
 		});
 	}
@@ -89,13 +111,16 @@ function nodePlop(plopfilePath = '', plopCfg = {}) {
 			const includeCfg = includeOverride || proxyDefaultInclude;
 			const include = Object.assign({
 				generators: false,
+				generatorMixins: false,
 				helpers: false,
 				partials: false,
 				actionTypes: false
 			}, includeCfg);
 
 			const genNameList = proxy.getGeneratorList().map(g => g.name);
+			const genMixinNameList = proxy.getGeneratorList().map(g => g.name);
 			loadAsset(genNameList, include.generators, setGenerator, proxyName => ({proxyName, proxy}));
+			loadAsset(genMixinNameList, include.generatorMixins, setGeneratorMixin, proxyName => ({proxyName, proxy}));
 			loadAsset(proxy.getPartialList(), include.partials, setPartial, proxy.getPartial);
 			loadAsset(proxy.getHelperList(), include.helpers, setHelper, proxy.getHelper);
 			loadAsset(proxy.getActionTypeList(), include.actionTypes, setActionType, proxy.getActionType);
@@ -136,6 +161,7 @@ function nodePlop(plopfilePath = '', plopCfg = {}) {
 		setPrompt,
 		setWelcomeMessage, getWelcomeMessage,
 		setGenerator, getGenerator, getGeneratorList,
+		setGeneratorMixin, getGeneratorMixin, getGeneratorMixinList,
 		setPartial, getPartial, getPartialList,
 		setHelper, getHelper, getHelperList,
 		setActionType, getActionType, getActionTypeList,
@@ -161,9 +187,40 @@ function nodePlop(plopfilePath = '', plopCfg = {}) {
 
 	// the runner for this instance of the nodePlop api
 	const runner = generatorRunner(plopfileApi);
+
+	/**
+		if actions is a funciton, it gets invoked with ...args and returned
+		otherwise actions is assumed to be an array and returned directly,
+		so in every case it will be an array
+	**/
+	const normalizeActions = (actions, ...args) => {
+		if(actions && typeof actions === 'function') {
+			return actions(...args) || [];
+		}
+		return actions || [];
+	};
+		// thx https://medium.com/@dtipson/creating-an-es6ish-compose-in-javascript-ac580b95104a
+	const compose = (...fns) => fns.reduce((f, g) => (...args) => f(g(...args)));
+	const applyGeneratorMixins = (generator) => {
+		const mixins = generator.mixins.map(
+			name => getGeneratorMixin(name)
+		);
+
+		const mixinActions = compose(...mixins.map(m => m.actions));
+		const mixinPrompts = compose(...mixins.map(m => m.prompts));
+
+		return Object.assign({}, generator, {
+			actions: (...actionsArgs) => mixinActions(normalizeActions(generator.actions, ...actionsArgs)),
+			prompts: mixinPrompts(generator.prompts)
+		});
+	};
+
 	const nodePlopApi = Object.assign({}, plopfileApi, {
 		getGenerator(name) {
-			var generator = plopfileApi.getGenerator(name);
+			let generator = plopfileApi.getGenerator(name);
+			if(generator.mixins) {
+				generator = applyGeneratorMixins(generator);
+			}
 
 			// if this generator was loaded from an external plopfile, proxy the
 			// generator request through to the external plop instance
