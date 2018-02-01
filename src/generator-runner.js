@@ -6,8 +6,8 @@ import promptBypass from './prompt-bypass';
 import * as buildInActions from './actions';
 
 
-export default function (plopfileApi) {
-	var abort;
+export default function (plopfileApi, flags) {
+	let abort;
 
 	// triggers inquirer with the correct prompts for this generator
 	// returns a promise that resolves with the user's answers
@@ -63,6 +63,8 @@ export default function (plopfileApi) {
 				});
 				continue;
 			}
+
+			action.force = (flags.force === true || action.force === true);
 
 			const actionIsFunction = typeof action === 'function';
 			const actionCfg = (actionIsFunction ? {} : action);

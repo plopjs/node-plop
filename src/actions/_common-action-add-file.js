@@ -1,4 +1,5 @@
 import path from 'path';
+import del from 'del';
 import {
 	getRenderedTemplate,
 	makeDestPath,
@@ -9,10 +10,18 @@ import * as fspp from '../fs-promise-proxy';
 
 export default function* addFile(data, cfg, plop) {
 	const fileDestPath = makeDestPath(data, cfg, plop);
+	const { force } = cfg;
 	try {
 		// check path
-		const pathExists = yield fspp.fileExists(fileDestPath);
+		let pathExists = yield fspp.fileExists(fileDestPath);
 
+		// if we are forcing and the file already exists, delete the file
+		if (force === true && pathExists) {
+			yield del([fileDestPath]);
+			pathExists = false;
+		}
+
+		// we can't create files where one already exists
 		if (pathExists) {
 			throw `File already exists\n -> ${fileDestPath}`;
 		} else {
