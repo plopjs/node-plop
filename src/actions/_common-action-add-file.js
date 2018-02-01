@@ -10,7 +10,7 @@ import * as fspp from '../fs-promise-proxy';
 
 export default function* addFile(data, cfg, plop) {
 	const fileDestPath = makeDestPath(data, cfg, plop);
-	const { force } = cfg;
+	const {force} = cfg;
 	try {
 		// check path
 		let pathExists = yield fspp.fileExists(fileDestPath);
