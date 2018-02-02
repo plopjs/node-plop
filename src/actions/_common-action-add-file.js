@@ -10,7 +10,7 @@ import * as fspp from '../fs-promise-proxy';
 
 export default function* addFile(data, cfg, plop) {
 	const fileDestPath = makeDestPath(data, cfg, plop);
-	const {force} = cfg;
+	const { force, skipIfExists = false } = cfg;
 	try {
 		// check path
 		let pathExists = yield fspp.fileExists(fileDestPath);
@@ -23,6 +23,7 @@ export default function* addFile(data, cfg, plop) {
 
 		// we can't create files where one already exists
 		if (pathExists) {
+			if (skipIfExists) { return `[SKIPPED] ${fileDestPath} (exists)`; }
 			throw `File already exists\n -> ${fileDestPath}`;
 		} else {
 			yield fspp.makeDir(path.dirname(fileDestPath));
