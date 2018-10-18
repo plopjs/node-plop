@@ -1,0 +1,1 @@
+this is a file named {{name}} inside module {{moduleName}}
