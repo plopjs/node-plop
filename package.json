@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@types/inquirer": "0.0.43",
-    "ava": "^0.25.0",
+    "ava": "^1.0.1",
     "babel-cli": "^6.16.0",
     "babel-preset-node8": "^1.2.0",
     "eslint": "^5.0.0",
