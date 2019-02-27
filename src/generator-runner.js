@@ -110,18 +110,18 @@ export default function (plopfileApi, flags) {
 	// handle action logic
 	const executeActionLogic = co.wrap(function* (action, cfg, data) {
 		const type = cfg.type || '';
-
+		const _data = type === 'function' ? data : Object.assign({}, data);
 		// convert any returned data into a promise to
 		// return and wait on
 		let cfgData = cfg.data || {};
 		// data can also be a function that returns a data object
 		if (typeof cfgData === 'function') { cfgData = yield cfgData(); }
 		Object.keys(cfgData || {}).forEach(k => {
-			if (typeof data[k] === 'undefined' || (data[k] && cfgData[k])) { 
-				data[k] = cfgData[k]; 
+			if (typeof _data[k] === 'undefined') { 
+				_data[k] = cfgData[k]; 
 			}
 		});
-		return yield Promise.resolve(action(data, cfg, plopfileApi)).then(
+		return yield Promise.resolve(action(_data, cfg, plopfileApi)).then(
 			// show the resolved value in the console
 			result => ({
 				type, path: (typeof result === 'string'
