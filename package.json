@@ -46,7 +46,7 @@
     "@babel/register": "^7.4.4",
     "@types/globby": "^9.1.0",
     "@types/handlebars": "^4.1.0",
-    "@types/inquirer": "6.0.1",
+    "@types/inquirer": "6.5.0",
     "ava": "^2.1.0",
     "eslint": "^5.16.0",
     "eslint-config-standard": "^12.0.0",
