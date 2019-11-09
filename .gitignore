@@ -22,3 +22,6 @@ tests/*-mock/src
 
 # IDE files
 .idea
+
+# ts incremental build info
+tsconfig.tsbuildinfo

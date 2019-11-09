@@ -2,15 +2,14 @@
   "name": "node-plop",
   "version": "0.23.0",
   "description": "programmatic plopping for fun and profit",
-  "main": "lib/index.js",
-  "types": "index.d.ts",
+  "main": "lib/index",
   "scripts": {
-    "clean": "node ./build-scripts/clean",
-    "eslint": "eslint src/",
+    "clean": "tsc --build --clean",
+    "eslint": "eslint --ext .ts src/",
     "test": "npm run eslint && npm run compile && ava",
     "test-watch": "ava --watch",
-    "compile": "npm run clean && babel src --out-dir lib",
-    "compile-watch": "babel src --watch --out-dir lib",
+    "compile": "npm run clean && tsc --build",
+    "compile-watch": "tsc --build --watch",
     "prepublishOnly": "npm run compile",
     "develop": "npm run clean && (npm run compile-watch & npm run test-watch)"
   },
@@ -40,10 +39,8 @@
     "node": ">=8.9.4"
   },
   "devDependencies": {
-    "@babel/cli": "^7.6.4",
-    "@babel/core": "^7.6.4",
-    "@babel/preset-env": "^7.6.3",
-    "@babel/register": "^7.6.2",
+    "@typescript-eslint/eslint-plugin": "^2.7.0",
+    "@typescript-eslint/parser": "^2.7.0",
     "ava": "^2.4.0",
     "eslint": "^6.5.1",
     "eslint-config-standard": "^14.1.0",
@@ -53,12 +50,16 @@
     "eslint-plugin-standard": "^4.0.1",
     "plop": "^2.4.0",
     "plop-pack-fancy-comments": "^0.2.1",
-    "pre-commit": "^1.x"
+    "pre-commit": "^1.x",
+    "typescript": "^3.7.2",
+    "ts-node": "^8.5.0",
+    "tslib": "^1.10.0"
   },
   "dependencies": {
     "@types/globby": "^9.1.0",
     "@types/handlebars": "^4.1.0",
     "@types/inquirer": "6.0.1",
+    "@types/node": "^12.12.7",
     "change-case": "^3.1.0",
     "co": "^4.6.0",
     "core-js": "^3.3.2",
@@ -73,14 +74,18 @@
   },
   "ava": {
     "files": [
-      "tests/*.ava.js"
+      "tests/*.ava.ts"
     ],
     "sources": [
-      "tests/**/plopfile.js",
-      "lib/**/*.js"
+      "tests/**/plopfile.ts",
+      "lib/**/*.ts"
+    ],
+    "compileEnhancements": false,
+    "extensions": [
+      "ts"
     ],
     "require": [
-      "@babel/register"
+      "ts-node/register/transpile-only"
     ],
     "tap": true
   }
