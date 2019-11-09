@@ -7,7 +7,7 @@ const {test, mockPath, testSrcPath, nodePlop} = (new AvaTest(__filename));
 /////
 // imported custom actions should execute
 //
-const customAction = require(path.resolve(mockPath, 'custom-action.js'));
+const customAction = require(path.resolve(mockPath, 'custom-action.ts'));
 
 test('imported custom action should execute correctly', co.wrap(function* (t) {
 	const plop = nodePlop();
