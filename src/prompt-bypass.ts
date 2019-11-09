@@ -103,7 +103,7 @@ export default function (prompts, bypassArr, plop) {
 	const {prompts: inqPrompts} = plop.inquirer.prompt;
 	
 	const answers = {};
-	const bypassFailures = [];
+	const bypassFailures: string[] = [];
 	
 	// generate a list of pompts that the user is bypassing
 	const bypassedPrompts = prompts.filter(function (p, idx) {

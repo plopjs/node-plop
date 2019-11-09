@@ -11,12 +11,16 @@ class AvaTest {
 		this.testName = path.basename(testFile).split('.')[0];
 		this.mockPath = normalizePath(path.resolve(__dirname, this.testName + '-mock'));
 		this.testSrcPath = path.resolve(this.mockPath, 'src');
-		this.test = ava;
-		this.nodePlop = nodePlop;
 
 		this.test.before(this.clean.bind(this));
 		this.test.after(this.clean.bind(this));
 	}
+
+	testName: string;
+	mockPath: string;
+	testSrcPath: string;
+	test = ava;
+	nodePlop = nodePlop;
 
 	clean() {
 		const ctx = this;

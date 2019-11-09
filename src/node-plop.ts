@@ -7,8 +7,9 @@ import resolve from 'resolve';
 
 import bakedInHelpers from './baked-in-helpers';
 import generatorRunner from './generator-runner';
+import { PlopCfg } from './types';
 
-function nodePlop(plopfilePath = '', plopCfg = {}) {
+function nodePlop(plopfilePath = '', plopCfg: PlopCfg = {}) {
 
 	let pkgJson = {};
 	let defaultInclude = {generators: true};

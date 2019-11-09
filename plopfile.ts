@@ -1,4 +1,5 @@
-module.exports = function (plop) {
+export = factory;
+function factory(plop) {
 	plop.setGenerator('test', {
 		prompts: [{
 			type: 'input',

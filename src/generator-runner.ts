@@ -37,8 +37,8 @@ export default function (plopfileApi, flags) {
 			onFailure=noop,            // runs after each failed action
 			onComment=noop             // runs for each comment line in the actions array
 		} = hooks;
-		const changes = [];          // array of changed made by the actions
-		const failures = [];         // array of actions that failed
+		const changes: ActionResult[] = [];          // array of changed made by the actions
+		const failures: Failure[] = [];         // array of actions that failed
 		let {actions} = genObject;   // the list of actions to execute
 		const customActionTypes = getCustomActionTypes();
 		const actionTypes = Object.assign({}, customActionTypes, buildInActions);
@@ -153,4 +153,15 @@ export default function (plopfileApi, flags) {
 		runGeneratorActions,
 		runGeneratorPrompts
 	};
+}
+
+interface ActionResult {
+	type: string;
+	path: string;
+}
+
+interface Failure {
+	type: string;
+	path: string;
+	error: string;
 }

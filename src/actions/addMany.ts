@@ -35,7 +35,7 @@ export default co.wrap(function* (data, userConfig, plop) {
 
 	const templateFiles = resolveTemplateFiles(cfg.templateFiles, cfg.base, cfg.globOptions, plop);
 
-	const filesAdded = [];
+	const filesAdded: string[] = [];
 	for (let templateFile of templateFiles) {
 		const absTemplatePath = path.resolve(plop.getPlopfilePath(), templateFile);
 		const fileCfg = Object.assign({}, cfg, {
