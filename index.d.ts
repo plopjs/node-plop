@@ -1,8 +1,8 @@
 import inquirer = require("inquirer");
 // @types/globby doesn't export types for GlobOptions, so we have to work a little bit to extract them:
 // GlobOptions is the second parameter of the sync function, which can be extracted with the Parameters<T> type
-import { GlobbyOptions } from 'globby';
-import {HelperDelegate as HelperFunction} from 'handlebars';
+import { GlobbyOptions } from "globby";
+import { HelperDelegate as HelperFunction } from "handlebars";
 
 export interface NodePlopAPI {
   /**
@@ -126,7 +126,7 @@ export interface PlopGenerator {
    * If your list of actions needs to be dynamic, take a look at
    * [using a dynamic actions array](https://plopjs.com/documentation/#using-a-dynamic-actions-array).
    */
-  actions: ActionType[];
+  actions: ActionType[] | CustomActionFunction;
 }
 
 export type CustomActionFunction<TData extends object = object> = (
@@ -142,15 +142,14 @@ export type CustomActionFunction<TData extends object = object> = (
    * The plop api for the plopfile where this action is being run.
    */
   plopfileApi?: NodePlopAPI
-) => Promise<string> | string; // Check return type?
+) => Promise<ActionType[]> | ActionType[];
 
 export type ActionType<TData extends object = object> =
   | ActionConfig<TData>
   | AddActionConfig<TData>
   | AddManyActionConfig<TData>
   | ModifyActionConfig<TData>
-  | AppendActionConfig<TData>
-  | CustomActionFunction<TData>;
+  | AppendActionConfig<TData>;
 
 /**
  * There are several types of built-in actions you can use in your
@@ -171,9 +170,7 @@ export interface ActionConfig<TData extends object = object> {
   /**
    * @default {}
    */
-  data:
-    | TData
-    | ((...args: any[]) => TData | Promise<TData>);
+  data: TData | ((...args: any[]) => TData | Promise<TData>);
   /**
    * @default true
    */
