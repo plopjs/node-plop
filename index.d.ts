@@ -126,7 +126,7 @@ export interface PlopGenerator {
    * If your list of actions needs to be dynamic, take a look at
    * [using a dynamic actions array](https://plopjs.com/documentation/#using-a-dynamic-actions-array).
    */
-  actions: ActionType[];
+  actions: ActionType[] | (data: any) => ActionType[];
 }
 
 export type CustomActionFunction<TData extends object = object> = (
@@ -167,7 +167,7 @@ export interface ActionConfig<TData extends object = object> {
    * Overwrites files if they exist.
    * @default false
    */
-  force: boolean;
+  force?: boolean;
   /**
    * @default {}
    */
