@@ -112,6 +112,8 @@ export interface NodePlopAPI {
   addHelper(name: string, fn: Function): void;
 }
 
+export type DynamicActionFunction = (data?: any) => ActionType[]
+
 export interface PlopGenerator {
   /**
    * Short description of what this generator does.
@@ -126,7 +128,7 @@ export interface PlopGenerator {
    * If your list of actions needs to be dynamic, take a look at
    * [using a dynamic actions array](https://plopjs.com/documentation/#using-a-dynamic-actions-array).
    */
-  actions: ActionType[] | ((data: any) => ActionType[]);
+  actions: ActionType[] | DynamicActionFunction;
 }
 
 export type CustomActionFunction<TData extends object = object> = (
@@ -171,13 +173,13 @@ export interface ActionConfig<TData extends object = object> {
   /**
    * @default {}
    */
-  data:
+  data?:
     | TData
     | ((...args: any[]) => TData | Promise<TData>);
   /**
    * @default true
    */
-  abortOnFail: boolean;
+  abortOnFail?: boolean;
 }
 
 /**
