@@ -112,6 +112,9 @@ export interface NodePlopAPI {
   addHelper(name: string, fn: Function): void;
 }
 
+export type Actions = Array<ActionType | string>
+export type DynamicActionFunction = (data?: any) => Actions
+
 export interface PlopGenerator {
   /**
    * Short description of what this generator does.
@@ -126,7 +129,7 @@ export interface PlopGenerator {
    * If your list of actions needs to be dynamic, take a look at
    * [using a dynamic actions array](https://plopjs.com/documentation/#using-a-dynamic-actions-array).
    */
-  actions: ActionType[];
+  actions: Actions | DynamicActionFunction;
 }
 
 export type CustomActionFunction<TData extends object = object> = (
@@ -167,17 +170,17 @@ export interface ActionConfig<TData extends object = object> {
    * Overwrites files if they exist.
    * @default false
    */
-  force: boolean;
+  force?: boolean;
   /**
    * @default {}
    */
-  data:
+  data?:
     | TData
     | ((...args: any[]) => TData | Promise<TData>);
   /**
    * @default true
    */
-  abortOnFail: boolean;
+  abortOnFail?: boolean;
 }
 
 /**
@@ -239,7 +242,7 @@ export interface AddManyActionConfig<TData extends object = object>
    * file/folder names if you'd like the added file names to be unique.
    * @type Glob
    */
-  templateFiles: string;
+  templateFiles: string | string[];
   /**
    * File extensions that should be stripped from `templateFiles` files names
    * while being added to the `destination`.

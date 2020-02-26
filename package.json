@@ -1,6 +1,6 @@
 {
   "name": "node-plop",
-  "version": "0.23.0",
+  "version": "0.24.0",
   "description": "programmatic plopping for fun and profit",
   "main": "lib/index",
   "scripts": {
@@ -42,7 +42,7 @@
     "@typescript-eslint/eslint-plugin": "^2.7.0",
     "@typescript-eslint/parser": "^2.7.0",
     "ava": "^2.4.0",
-    "eslint": "^6.5.1",
+    "eslint": "^6.8.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-node": "^10.0.0",
@@ -61,7 +61,6 @@
     "@types/inquirer": "6.0.1",
     "@types/node": "^12.12.7",
     "change-case": "^3.1.0",
-    "co": "^4.6.0",
     "core-js": "^3.3.2",
     "del": "^5.1.0",
     "globby": "^10.0.1",
