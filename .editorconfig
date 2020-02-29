@@ -7,6 +7,6 @@ indent_style = tab
 indent_size = 4
 insert_final_newline = true
 
-[{package.json,.eslintrc.json}]
+[package.json]
 indent_style = space
 indent_size = 2
