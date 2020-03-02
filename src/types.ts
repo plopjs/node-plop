@@ -2,135 +2,10 @@ import inquirer = require('inquirer');
 // @types/globby doesn't export types for GlobOptions, so we have to work a little bit to extract them:
 // GlobOptions is the second parameter of the sync function, which can be extracted with the Parameters<T> type
 import { GlobbyOptions } from 'globby';
-import {HelperDelegate as HelperFunction} from 'handlebars';
-
-export interface NodePlopAPI {
-  /**
-   * Get the [GeneratorConfig](https://plopjs.com/documentation/#interface-generatorconfig) by name.
-   */
-  getGenerator(name: string): PlopGenerator;
-  /**
-   * Setup a generator.
-   * The config object needs to include `prompts` and `actions` (`description`
-   * is optional). The prompts array is passed to [inquirer](https://github.com/SBoudrias/Inquirer.js/#objects).
-   * The `actions` array is a list of actions to take (described in greater
-   * detail below).
-   * @returns [GeneratorConfig](https://plopjs.com/documentation/#interface-generatorconfig)
-   */
-  setGenerator(name: string, config: PlopGenerator): PlopGenerator;
-
-  /**
-   * Registers a custom prompt type with inquirer.
-   * [Inquirer](https://github.com/SBoudrias/Inquirer.js) provides many types
-   * of prompts out of the box, but it also allows developers to build prompt
-   * plugins. If you'd like to use a prompt plugin, you can register it with
-   * `setPrompt`. For more details see the [Inquirer documentation for registering prompts](https://github.com/SBoudrias/Inquirer.js#inquirerregisterpromptname-prompt).
-   * Also check out the [plop community driven list of custom prompts](https://github.com/amwmedia/plop/blob/master/inquirer-prompts.md).
-   */
-  setPrompt(name: string, prompt: inquirer.PromptModule): void;
-  /**
-   * Customizes the displayed message that asks you to choose a generator when
-   * you run `plop`.
-   */
-  setWelcomeMessage(message: string): void;
-  getWelcomeMessage(): string;
-  /**
-   * Gets an array of generator names and descriptions.
-   */
-  getGeneratorList(): { name: string; description: string }[];
-  /**
-   * Setup a handlebars partial.
-   * Directly corresponds to the handlebars method `registerPartial`.
-   * So if you are familiar with [handlebars helpers](http://handlebarsjs.com/expressions.html#helpers),
-   * then you already know how this works.
-   */
-  setPartial(name: string, str: string): void;
-  getPartial(name: string): string;
-  getPartialList(): string[];
-  /**
-   * Setup handlebars helper.
-   * Directly corresponds to the handlebars method `registerHelper`.
-   * So if you are familiar with [handlebars partials](http://handlebarsjs.com/partials.html),
-   * then you already know how this works.
-   */
-  setHelper(name: string, fn: HelperFunction): void;
-  getHelper(name: string): Function;
-  getHelperList(): string[];
-  /**
-   * Register a custom action type.
-   * Allows you to create your own actions (similar to `add` or `modify`) that
-   * can be used in your plopfiles. These are basically highly reusable
-   * [custom action functions](https://plopjs.com/documentation/#custom-action-function-).
-   */
-  setActionType(name: string, fn: CustomActionFunction): void;
-  getActionType(name: string): ActionType;
-  getActionTypeList(): string[];
-
-  /**
-   * Set the `plopfilePath` value which is used internally to locate resources
-   * like template files.
-   */
-  setPlopfilePath(filePath: string): void;
-  /**
-   * @returns the absolute path to the plopfile in use.
-   */
-  getPlopfilePath(): string;
-  /**
-   * @returns the base path that is used when creating files.
-   */
-  getDestBasePath(): string;
-
-  /**
-   * Loads generators, helpers and/or partials from another plopfile or
-   * npm module.
-   */
-  load(
-    target: string[] | string,
-    loadCfg: PlopCfg,
-    includeOverride: boolean
-  ): void;
-  /**
-   * Sets the default config that will be used for this plopfile if it is
-   * consumed by another plopfile using `plop.load()`.
-   */
-  setDefaultInclude(inc: object): void;
-  /**
-   * Gets the default config that will be used for this plopfile if it is
-   * consumed by another plopfile using `plop.load()`.
-   */
-  getDefaultInclude(): object;
-
-  /**
-   * Runs `template` through the handlebars template renderer using `data`.
-   * @returns the rendered template.
-   */
-  renderString(template: string, data: any): string; //set to any matching handlebars declaration
-
-  // passthroughs for backward compatibility
-  addPrompt: typeof inquirer.registerPrompt;
-  addPartial(name: string, str: string): void;
-  addHelper(name: string, fn: Function): void;
-}
+import nodePlop, {NodePlopAPI} from './node-plop';
 
 export type Actions = Array<ActionType | string>
 export type DynamicActionFunction = (data?: any) => Actions
-
-export interface PlopGenerator {
-  /**
-   * Short description of what this generator does.
-   */
-  description: string;
-  /**
-   * Questions to ask the user.
-   */
-  prompts: inquirer.Question[];
-  /**
-   * Actions to perform.
-   * If your list of actions needs to be dynamic, take a look at
-   * [using a dynamic actions array](https://plopjs.com/documentation/#using-a-dynamic-actions-array).
-   */
-  actions: Actions | DynamicActionFunction;
-}
 
 export type CustomActionFunction<TData extends object = object> = (
   /**
@@ -336,5 +211,22 @@ export interface PlopCfg {
   destBasePath?: string;
 }
 
-declare function nodePlop(plopfilePath: string, plopCfg?: PlopCfg): NodePlopAPI;
-export default nodePlop;
+export interface PlopGenerator {
+	/**
+	 * Short description of what this generator does.
+	 */
+	description: string;
+	/**
+	 * Questions to ask the user.
+	 */
+	prompts: inquirer.Question[];
+	/**
+	 * Actions to perform.
+	 * If your list of actions needs to be dynamic, take a look at
+	 * [using a dynamic actions array](https://plopjs.com/documentation/#using-a-dynamic-actions-array).
+	 */
+	actions: Actions | DynamicActionFunction;
+	proxy?: NodePlopAPI;
+	name: string;
+	proxyName?: string;
+}

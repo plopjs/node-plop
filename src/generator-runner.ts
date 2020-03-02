@@ -158,7 +158,7 @@ interface ActionResult {
 	path: string;
 }
 
-interface Failure {
+interface Failure extends ActionResult {
 	type: string;
 	path: string;
 	error: string;
