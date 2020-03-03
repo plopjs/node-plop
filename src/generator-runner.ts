@@ -95,6 +95,8 @@ export default function (plopfileApi, flags) {
 			try {
 				const actionResult = await executeActionLogic(actionLogic, actionCfg, data);
 				onSuccess(actionResult);
+				// I'm pretty sure this is a node-plop bug identified by TS
+				// @ts-ignore
 				changes.push(actionResult);
 			} catch(failure) {
 				if (actionCfg.abortOnFail !== false) { abort = true; }
@@ -113,6 +115,14 @@ export default function (plopfileApi, flags) {
 		let cfgData = cfg.data || {};
 		// data can also be a function that returns a data object
 		if (typeof cfgData === 'function') { cfgData = await cfgData(); }
+
+		// check if action should run
+		if (typeof cfg.skip === 'function') {
+			const reasonToSkip = await cfg.skip(data);
+			if (typeof reasonToSkip === 'string') {
+				return reasonToSkip;
+			}
+		}
 
 		// track keys that can be applied to the main data scope
 		const cfgDataKeys = Object.keys(cfgData).filter(k => typeof data[k] === 'undefined');
@@ -135,16 +145,19 @@ export default function (plopfileApi, flags) {
 				}
 			)
 			// cleanup main data scope so config data doesn't leak
-			.finally(() => cfgDataKeys.forEach(k => {delete data[k];}));
+			.finally(() =>
+				cfgDataKeys.forEach(k => {
+					delete data[k];
+				})
+			);
 	};
 
 	// request the list of custom actions from the plopfile
 	function getCustomActionTypes() {
-		return plopfileApi.getActionTypeList()
-			.reduce(function (types, name) {
-				types[name] = plopfileApi.getActionType(name);
-				return types;
-			}, {});
+		return plopfileApi.getActionTypeList().reduce(function(types, name) {
+			types[name] = plopfileApi.getActionType(name);
+			return types;
+		}, {});
 	}
 
 	return {

@@ -29,6 +29,7 @@ module.exports = {
 		'@typescript-eslint/no-var-requires': 'off',
 		'@typescript-eslint/unbound-method': 'off',
 		'no-var': 'off',
-		'prefer-const': 'off'
+		'prefer-const': 'off',
+		'@typescript-eslint/ban-ts-ignore': 'off'
 	}
 };
