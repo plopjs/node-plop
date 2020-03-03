@@ -36,7 +36,7 @@ export default function (plopfileApi, flags) {
 			onFailure=noop,            // runs after each failed action
 			onComment=noop             // runs for each comment line in the actions array
 		} = hooks;
-		const changes: ActionResult[] = [];          // array of changed made by the actions
+		const changes: (ActionResult | string)[] = [];          // array of changed made by the actions
 		const failures: Failure[] = [];         // array of actions that failed
 		let {actions} = genObject;   // the list of actions to execute
 		const customActionTypes = getCustomActionTypes();
@@ -95,8 +95,6 @@ export default function (plopfileApi, flags) {
 			try {
 				const actionResult = await executeActionLogic(actionLogic, actionCfg, data);
 				onSuccess(actionResult);
-				// I'm pretty sure this is a node-plop bug identified by TS
-				// @ts-ignore
 				changes.push(actionResult);
 			} catch(failure) {
 				if (actionCfg.abortOnFail !== false) { abort = true; }
