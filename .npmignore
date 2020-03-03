@@ -1,5 +1,5 @@
-src
 tests
+declarations
 .*rc
 build-scripts
 plopfile.ts

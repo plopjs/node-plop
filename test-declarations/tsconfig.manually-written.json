@@ -1,0 +1,11 @@
+// Use path mapping so `import "node-plop"` points to manually-written index.d.ts
+{
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"paths": {
+			"node-plop": [
+				"index.d.ts"
+			]
+		}
+	}
+}

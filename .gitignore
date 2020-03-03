@@ -16,6 +16,7 @@ node_modules
 
 # Compiled src
 lib
+declarations
 
 # Test mocks
 tests/*-mock/src
