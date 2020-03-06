@@ -4,6 +4,28 @@ import inquirer from 'inquirer';
 import { GlobbyOptions } from 'globby';
 import {HelperDelegate as HelperFunction} from 'handlebars';
 
+type WithTemplateOrFile<T> =
+  | (T & {
+      /**
+       * Handlebars template to be used for the entry.
+       */
+      template: string;
+      /**
+       * Path to a file containing the `template`.
+       */
+      templateFile?: string;
+    })
+  | (T & {
+      /**
+       * Handlebars template to be used for the entry.
+       */
+      template?: string;
+      /**
+       * Path to a file containing the `template`.
+       */
+      templateFile: string;
+    });
+
 export interface NodePlopAPI {
   /**
    * Get the [GeneratorConfig](https://plopjs.com/documentation/#interface-generatorconfig) by name.
@@ -238,7 +260,7 @@ export interface AddActionConfig<TData extends object = object>
 export interface AddManyActionConfig<TData extends object = object>
   extends Pick<
     AddActionConfig<TData>,
-    Exclude<keyof AddActionConfig<TData>, 'type'>
+    Exclude<keyof AddActionConfig<TData>, 'type' | 'path'>
   > {
   /**
    * The type of action.
@@ -289,7 +311,7 @@ export interface AddManyActionConfig<TData extends object = object>
  * 
  * More details on modify can be found in the example folder.
  */
-export interface ModifyActionConfig<TData extends object = object>
+export interface ModifyActionConfigBase<TData extends object = object>
   extends ActionConfig<TData> {
   /**
    * The type of action.
@@ -304,27 +326,18 @@ export interface ModifyActionConfig<TData extends object = object>
    * Used to match text that should be replaced.
    * @default end-of-file
    */
-  pattern?: string | RegExp;
-  /**
-   * Handlebars template that should replace what was matched by the `pattern`.
-   * Capture groups are available as `$1`, `$2`, etc.
-   */
-  template?: string;
-  /**
-   * Path a file containing the `template`.
-   */
-  templateFile?: string;
-  /**
-   * Transform the file contents immediately before writing to disk.
-   */
-  transform?: (fileContents: string, data: TData) => string;
+  pattern: string | RegExp;
 }
+
+export type ModifyActionConfig<
+  TData extends object = object
+> = WithTemplateOrFile<ModifyActionConfigBase<TData>>;
 
 /**
  * The `append` action is a commonly used subset of `modify`. It is used to
  * append data in a file at a particular location.
  */
-export interface AppendActionConfig<TData extends object = object>
+export interface AppendActionConfigBase<TData extends object = object>
   extends ActionConfig<TData> {
   /**
    * The type of action.
@@ -349,15 +362,11 @@ export interface AppendActionConfig<TData extends object = object>
    * @default newline
    */
   separator?: string;
-  /**
-   * Handlebars template to be used for the entry.
-   */
-  template: string;
-  /**
-   * Path a file containing the template.
-   */
-  templateFile: string;
 }
+
+export type AppendActionConfig<
+  TData extends object = object
+> = WithTemplateOrFile<AppendActionConfigBase<TData>>;
 
 export interface PlopCfg {
   force: boolean;
