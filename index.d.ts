@@ -1,30 +1,8 @@
-import inquirer = require("inquirer");
+import inquirer from 'inquirer';
 // @types/globby doesn't export types for GlobOptions, so we have to work a little bit to extract them:
 // GlobOptions is the second parameter of the sync function, which can be extracted with the Parameters<T> type
 import { GlobbyOptions } from 'globby';
 import {HelperDelegate as HelperFunction} from 'handlebars';
-
-type WithTemplateOrFile<T> =
-  | (T & {
-      /**
-       * Handlebars template to be used for the entry.
-       */
-      template: string;
-      /**
-       * Path to a file containing the `template`.
-       */
-      templateFile?: string;
-    })
-  | (T & {
-      /**
-       * Handlebars template to be used for the entry.
-       */
-      template?: string;
-      /**
-       * Path to a file containing the `template`.
-       */
-      templateFile: string;
-    });
 
 export interface NodePlopAPI {
   /**
@@ -126,7 +104,7 @@ export interface NodePlopAPI {
    * Runs `template` through the handlebars template renderer using `data`.
    * @returns the rendered template.
    */
-  renderString(template: string, data: any): String; //set to any matching handlebars declaration
+  renderString(template: string, data: any): string; //set to any matching handlebars declaration
 
   // passthroughs for backward compatibility
   addPrompt: typeof inquirer.registerPrompt;
@@ -134,7 +112,8 @@ export interface NodePlopAPI {
   addHelper(name: string, fn: Function): void;
 }
 
-export type DynamicActionFunction = (data?: any) => ActionType[]
+export type Actions = Array<ActionType | string>
+export type DynamicActionFunction = (data?: any) => Actions
 
 export interface PlopGenerator {
   /**
@@ -150,7 +129,7 @@ export interface PlopGenerator {
    * If your list of actions needs to be dynamic, take a look at
    * [using a dynamic actions array](https://plopjs.com/documentation/#using-a-dynamic-actions-array).
    */
-  actions: ActionType[] | DynamicActionFunction;
+  actions: Actions | DynamicActionFunction;
 }
 
 export type CustomActionFunction<TData extends object = object> = (
@@ -202,6 +181,19 @@ export interface ActionConfig<TData extends object = object> {
    * @default true
    */
   abortOnFail?: boolean;
+  /**
+   * Skip an action if this function returns a string,
+   * which is the reason it should be skipped.
+   *
+   * May also return a Promise which resolves to a string.
+   *
+   * The action will continue if action.skip()
+   * returns or resolves to anything other than a string,
+   * and the return value will be ignored.
+   *
+   * @default () => true
+   */
+  skip?: (data: TData) => void | string | Promise<void | string>;
 }
 
 /**
@@ -214,7 +206,7 @@ export interface AddActionConfig<TData extends object = object>
   /**
    * The type of action.
    */
-  type: "add";
+  type: 'add';
   /**
    * A handlebars template that will be used to create the file by name.
    */
@@ -232,6 +224,10 @@ export interface AddActionConfig<TData extends object = object>
    * @default false
    */
   skipIfExists?: boolean;
+  /**
+   * Transform the template result before writing the file.
+   */
+  transform?: (templateResult: string, data: TData) => string;
 }
 
 /**
@@ -242,12 +238,12 @@ export interface AddActionConfig<TData extends object = object>
 export interface AddManyActionConfig<TData extends object = object>
   extends Pick<
     AddActionConfig<TData>,
-    Exclude<keyof AddActionConfig<TData>, "type" | "path">
+    Exclude<keyof AddActionConfig<TData>, 'type'>
   > {
   /**
    * The type of action.
    */
-  type: "addMany";
+  type: 'addMany';
   /**
    * A handlebars template that will be used to identify the folder that the
    * generated files should go into.
@@ -263,7 +259,7 @@ export interface AddManyActionConfig<TData extends object = object>
    * file/folder names if you'd like the added file names to be unique.
    * @type Glob
    */
-  templateFiles: string;
+  templateFiles: string | string[];
   /**
    * File extensions that should be stripped from `templateFiles` files names
    * while being added to the `destination`.
@@ -279,14 +275,21 @@ export interface AddManyActionConfig<TData extends object = object>
    * @default true
    */
   verbose?: boolean;
+  /**
+   * Transform the template result before writing the file.
+   */
+  transform?: (templateResult: string, data: TData) => string;
 }
 
 /**
- * The `modify` action will use a `pattern` property to find/replace text in the
- * file located at the `path` specified. More details on modify can be found in
- * the example folder.
+ * The `modify` action will use a `pattern` property and/or a `transform` function 
+ * to find/replace or transform text in the file located at the `path` specified.
+ * 
+ * `pattern` and `transform` can be used together or individually.
+ * 
+ * More details on modify can be found in the example folder.
  */
-interface ModifyActionConfigBase<TData extends object = object>
+export interface ModifyActionConfig<TData extends object = object>
   extends ActionConfig<TData> {
   /**
    * The type of action.
@@ -301,18 +304,27 @@ interface ModifyActionConfigBase<TData extends object = object>
    * Used to match text that should be replaced.
    * @default end-of-file
    */
-  pattern: string | RegExp;
+  pattern?: string | RegExp;
+  /**
+   * Handlebars template that should replace what was matched by the `pattern`.
+   * Capture groups are available as `$1`, `$2`, etc.
+   */
+  template?: string;
+  /**
+   * Path a file containing the `template`.
+   */
+  templateFile?: string;
+  /**
+   * Transform the file contents immediately before writing to disk.
+   */
+  transform?: (fileContents: string, data: TData) => string;
 }
-
-export type ModifyActionConfig<
-  TData extends object = object
-> = WithTemplateOrFile<ModifyActionConfigBase<TData>>;
 
 /**
  * The `append` action is a commonly used subset of `modify`. It is used to
  * append data in a file at a particular location.
  */
-interface AppendActionConfigBase<TData extends object = object>
+export interface AppendActionConfig<TData extends object = object>
   extends ActionConfig<TData> {
   /**
    * The type of action.
@@ -337,11 +349,15 @@ interface AppendActionConfigBase<TData extends object = object>
    * @default newline
    */
   separator?: string;
+  /**
+   * Handlebars template to be used for the entry.
+   */
+  template: string;
+  /**
+   * Path a file containing the template.
+   */
+  templateFile: string;
 }
-
-export type AppendActionConfig<
-  TData extends object = object
-> = WithTemplateOrFile<AppendActionConfigBase<TData>>;
 
 export interface PlopCfg {
   force: boolean;
