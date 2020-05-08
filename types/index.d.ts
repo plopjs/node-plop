@@ -60,7 +60,17 @@ interface PlopActionHooks {
 
 export interface PlopGenerator {
 	description: string;
-	prompts: inquirer.Question[];
+	prompts:
+    | inquirer.Question[]
+    | inquirer.CheckboxQuestion[]
+    | inquirer.ListQuestion[]
+    | inquirer.ExpandQuestion[]
+    | inquirer.ConfirmQuestion[]
+    | inquirer.EditorQuestion[]
+    | inquirer.RawListQuestion[]
+    | inquirer.PasswordQuestion[]
+    | inquirer.NumberQuestion[]
+    | inquirer.InputQuestion[];
 	actions: ActionType[];
 	runPrompts: (bypassArr?: string[]) => Promise<any>;
 	runActions: (
