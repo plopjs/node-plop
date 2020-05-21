@@ -32,7 +32,7 @@ export default async function (data, userConfig, plop) {
 		.concat(cfg.templateFiles) // Ensure `cfg.templateFiles` is an array, even if a string is passed.
 		.map((file) => plop.renderString(file, data)); // render the paths as hbs templates
 
-	const templateFiles = resolveTemplateFiles(cfg.templateFiles, cfg.base, cfg.globOptions, plop);
+	const templateFiles = resolveTemplateFiles(cfg, plop);
 
 	const filesAdded = [];
 	for (let templateFile of templateFiles) {
@@ -50,12 +50,49 @@ export default async function (data, userConfig, plop) {
 	else return `${summary}\n -> ${filesAdded.join('\n -> ')}`;
 }
 
-function resolveTemplateFiles(templateFilesGlob, basePath, globOptions, plop) {
+function resolveTemplateFiles({ templateFilesGlob, basePath, globOptions, preExtPreference }, plop) {
 	globOptions = Object.assign({ cwd: plop.getPlopfilePath() }, globOptions);
-	return globby.sync(templateFilesGlob, Object.assign({braceExpansion: false}, globOptions))
+	return globby
+		.sync(templateFilesGlob, Object.assign({ braceExpansion: false }, globOptions))
 		.filter(isUnder(basePath))
 		.filter(isAbsoluteOrRelativeFileTo(plop.getPlopfilePath()));
 }
+
+/**
+ * @returns null | {baseFile: string}
+ */
+function isAPrefferedFile(preExtPreference) {
+	const removePrefExt = (fileName, preExtPreference) =>
+		fileName.slice(0, fileName.length - preExtPreference.length);
+	// [3] only exists if no extension, [1] is the base, [2] is the extension
+	const extRegex = /^(?:(.*)(\..*?)|([^.]*))$/;
+	return file => {
+		const [_, base, ext, noExtFile] = extRegex.exec(file);
+		if (noExtFile) {
+			if (noExtFile.endsWith(preExtPreference)) {
+				// If `noExtFile` is `testandroid` and `preExt
+				const baseFile = removePrefExt(noExtFile, preExtPreference);
+				return {baseFile};
+			}
+			// If [3], then [1] and [2] are null
+			return null;
+		}
+
+		// This was a file that didn't have an extension but now does because preExtPreference is prefixed with a dot
+		// EG: `test` vs `test.android`
+		if (ext === preExtPreference) {
+			return base;
+		}
+
+		if (base.endsWith(preExtPreference)) {
+			const baseWithoutPref = removePrefExt(noExtFile, preExtPreference);
+			return { baseFile: `${baseWithoutPref}${ext}` };
+		}
+
+		return null;
+	};
+}
+
 function isAbsoluteOrRelativeFileTo(relativePath) {
 	const isFile = file => fs.existsSync(file) && fs.lstatSync(file).isFile();
 	return file => isFile(file) || isFile(path.join(relativePath, file));
