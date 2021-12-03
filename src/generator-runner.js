@@ -133,7 +133,7 @@ export default function (plopfileApi, flags) {
 		// copy config data into main data scope so it's available for templates
 		cfgDataKeys.forEach(k => {data[k] = cfgData[k];});
 
-		return await Promise.resolve(action(data, cfg, plopfileApi))
+		return await action(data, cfg, plopfileApi)
 			.then(
 				// show the resolved value in the console
 				result => ({
