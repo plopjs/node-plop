@@ -2,12 +2,13 @@ import path from 'path';
 import del from 'del';
 import {
 	getRenderedTemplate,
+	getTransformedTemplate,
 	makeDestPath,
 	throwStringifiedError,
 	getRelativeToBasePath
-} from './_common-action-utils';
+} from './_common-action-utils.js';
 import {isBinaryFileSync} from 'isbinaryfile';
-import * as fspp from '../fs-promise-proxy';
+import * as fspp from '../fs-promise-proxy.js';
 
 export default async function addFile(data, cfg, plop) {
 	const fileDestPath = makeDestPath(data, cfg, plop);
@@ -38,7 +39,14 @@ export default async function addFile(data, cfg, plop) {
 				await fspp.writeFileRaw(fileDestPath, rawTemplate);
 			} else {
 				const renderedTemplate = await getRenderedTemplate(data, cfg, plop);
-				await fspp.writeFile(fileDestPath, renderedTemplate);
+
+				const transformedTemplate = await getTransformedTemplate(
+					renderedTemplate,
+					data,
+					cfg
+				);
+
+				await fspp.writeFile(fileDestPath, transformedTemplate);
 			}
 
 			// keep the executable flags

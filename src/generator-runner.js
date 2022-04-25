@@ -1,7 +1,7 @@
 'use strict';
 
-import promptBypass from './prompt-bypass';
-import * as buildInActions from './actions';
+import promptBypass from './prompt-bypass.js';
+import * as buildInActions from './actions/index.js';
 
 
 export default function (plopfileApi, flags) {
@@ -21,7 +21,7 @@ export default function (plopfileApi, flags) {
 		}
 
 		// handle bypass data when provided
-		const [promptsAfterBypass, bypassAnswers] = promptBypass(prompts, bypassArr, plopfileApi);
+		const [promptsAfterBypass, bypassAnswers] = await promptBypass(prompts, bypassArr, plopfileApi);
 
 		return await plopfileApi.inquirer
 			.prompt(promptsAfterBypass)
@@ -114,6 +114,20 @@ export default function (plopfileApi, flags) {
 		// data can also be a function that returns a data object
 		if (typeof cfgData === 'function') { cfgData = await cfgData(); }
 
+		// check if action should run
+		if (typeof cfg.skip === 'function') {
+			// Merge main data and config data in new object
+			const reasonToSkip = await cfg.skip({ ...data, ...cfgData });
+
+			if (typeof reasonToSkip === 'string') {
+				// Return actionResult instead of string
+				return {
+					type: 'skip',
+					path: reasonToSkip
+				};
+			}
+		}
+
 		// track keys that can be applied to the main data scope
 		const cfgDataKeys = Object.keys(cfgData).filter(k => typeof data[k] === 'undefined');
 		// copy config data into main data scope so it's available for templates
@@ -135,16 +149,19 @@ export default function (plopfileApi, flags) {
 				}
 			)
 			// cleanup main data scope so config data doesn't leak
-			.finally(() => cfgDataKeys.forEach(k => {delete data[k];}));
+			.finally(() =>
+				cfgDataKeys.forEach(k => {
+					delete data[k];
+				})
+			);
 	};
 
 	// request the list of custom actions from the plopfile
 	function getCustomActionTypes() {
-		return plopfileApi.getActionTypeList()
-			.reduce(function (types, name) {
-				types[name] = plopfileApi.getActionType(name);
-				return types;
-			}, {});
+		return plopfileApi.getActionTypeList().reduce(function(types, name) {
+			types[name] = plopfileApi.getActionType(name);
+			return types;
+		}, {});
 	}
 
 	return {
